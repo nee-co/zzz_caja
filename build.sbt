@@ -9,8 +9,7 @@ val slick_codegen_version = "3.1.1"
 scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
-  jdbc
-, cache
+  cache
 , ws
 , specs2 % Test
 , "com.typesafe.slick" %% "slick-codegen"         % slick_codegen_version
