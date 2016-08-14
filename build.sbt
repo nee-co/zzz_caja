@@ -7,6 +7,9 @@ val slick_version = "1.1.1"
 val slick_codegen_version = "3.1.1"
 val mariadb_version = "1.3.3"
 val aws_version = "1.11.8"
+val logging_version = "3.1.0"
+val logback_version = "1.1.3"
+
 
 scalaVersion := "2.11.8"
 
@@ -21,6 +24,8 @@ libraryDependencies ++= Seq(
 , "org.mariadb.jdbc"   %  "mariadb-java-client"   % mariadb_version
 , "com.amazonaws"      %  "aws-java-sdk-core"     % aws_version
 , "com.amazonaws"      %  "aws-java-sdk-s3"       % aws_version
+, "com.typesafe.scala-logging" %% "scala-logging" % logging_version
+, "ch.qos.logback" % "logback-classic"            % logback_version
 )
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )  
