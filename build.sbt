@@ -11,6 +11,7 @@ val logging_version = "3.1.0"
 val logback_version = "1.1.3"
 val joda_time_version = "2.7"
 val joda_convert_version = "1.7"
+val scalaz_version = "7.2.5"
 
 scalaVersion := "2.11.8"
 
@@ -26,9 +27,10 @@ libraryDependencies ++= Seq(
 , "com.amazonaws"      %  "aws-java-sdk-core"     % aws_version
 , "com.amazonaws"      %  "aws-java-sdk-s3"       % aws_version
 , "com.typesafe.scala-logging" %% "scala-logging" % logging_version
-, "ch.qos.logback" % "logback-classic"            % logback_version
-, "joda-time" % "joda-time"                       % joda_time_version
-, "org.joda" % "joda-convert"                     % joda_convert_version
+, "ch.qos.logback"     % "logback-classic"        % logback_version
+, "joda-time"          % "joda-time"              % joda_time_version
+, "org.joda"           % "joda-convert"           % joda_convert_version
+, "org.scalaz"         %% "scalaz-core"           % scalaz_version
 )
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )  
