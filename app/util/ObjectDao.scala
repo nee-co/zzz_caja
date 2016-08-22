@@ -3,6 +3,7 @@ package util
 import models.Tables.{Directories, DirectoriesRow, Files, FilesRow}
 import javax.inject.Inject
 
+import models.ObjectProperty
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._

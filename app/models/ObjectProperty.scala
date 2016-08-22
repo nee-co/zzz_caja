@@ -1,4 +1,4 @@
-package util
+package models
 
 import java.sql.Timestamp
 
