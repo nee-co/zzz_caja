@@ -11,3 +11,6 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 # DB Test
 GET     /db                         controllers.DbTest.index
 POST    /dbTest                     controllers.DbTest.dbTest
+
+# FileAPI
+GET    /files/*path                 controllers.FileController.download(path)
