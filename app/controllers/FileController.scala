@@ -22,4 +22,11 @@ class FileController @Inject()(db: DBService, s3: S3Service) extends Controller 
       case None => Status(500)
     }
   }
+
+  def delete(path: String) = Action {
+    s3.delete(path) match {
+      case true  => if (db.deleteByFilepath(path)) Status(204) else Status(403)
+      case false => Status(403)
+    }
+  }
 }
