@@ -3,6 +3,7 @@ package util
 import java.sql.Timestamp
 import javax.inject.Inject
 
+import models.CajaRequest
 import models.Tables.{DirectoriesRow, FilesRow}
 import org.joda.time.LocalDateTime
 
@@ -59,6 +60,33 @@ class DBService @Inject()(private val db: ObjectDao) {
     db.getFile(path) match {
       case Some(file) => if (db.delete(file)) true else false
       case None => false
+    }
+  }
+
+  def updateTargetByJson(path: String, jsonValues: CajaRequest): Boolean = {
+    db.objType(path) match {
+
+      case "dir"  =>
+        val obj = db.getDirectory(path)
+
+        if (obj.nonEmpty && jsonValues.target_type == "college") {
+          db.update(DirectoriesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.insertedBy, obj.get.insertedAt, nowTimestamp))
+        } else if (obj.nonEmpty && jsonValues.target_type == "user") {
+          db.update(DirectoriesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.insertedBy, obj.get.insertedAt, nowTimestamp))
+        } else {
+          false
+        }
+
+      case "file" =>
+        val obj = db.getFile(path)
+
+        if (obj.nonEmpty && jsonValues.target_type == "college") {
+          db.update(FilesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, nowTimestamp))
+        } else if (obj.nonEmpty && jsonValues.target_type == "user") {
+          db.update(FilesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, nowTimestamp))
+        } else {
+          false
+        }
     }
   }
 }
