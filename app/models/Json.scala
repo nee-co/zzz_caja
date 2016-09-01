@@ -32,10 +32,7 @@ object Users {
   implicit def jsonWrites = Json.writes[Users]
 }
 
-/*
- * Caja Request
- */
-case class FileRequest(name: String, target_type: String, public_ids: List[String])
-object FileRequest {
-  implicit def jsonReads = Json.reads[FileRequest]
+case class CajaRequest(name: String, target_type: String, public_ids: List[String])
+object CajaRequest {
+  implicit def jsonReads = Json.reads[CajaRequest]
 }
