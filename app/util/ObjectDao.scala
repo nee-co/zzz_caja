@@ -17,7 +17,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
   val files       = new TableQuery(tag => new Files(tag))
   val directories = new TableQuery(tag => new Directories(tag))
 
-  private def objType(path: String): String = if (path.last == '/') "dir" else "file"
+  def objType(path: String): String = if (path.last == '/') "dir" else "file"
 
   def add[T](obj: T): Boolean = {
     val result = obj match {
