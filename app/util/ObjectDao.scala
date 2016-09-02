@@ -85,6 +85,40 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     if (objects.isEmpty) None else Some(objects)
   }
 
+  def findByLoginId(target: String, path: String, id: String): Option[Seq[ObjectProperty]] = {
+    var objects  = ArrayBuffer.empty[ObjectProperty]
+    val parentId = findDirId(path)
+
+    if (parentId.nonEmpty) {
+      val fileResult: Future[Seq[FilesRow]] = target match {
+        case "user"     => db.run(files.filter(file => (file.parentId === parentId.get) && file.userIds.like(s"%$id%")).result)
+        case "college"  => db.run(files.filter(file => (file.parentId === parentId.get) && file.collegeIds.like(s"%$id%")).result)
+      }
+
+      val dirResult: Future[Seq[DirectoriesRow]] = target match {
+        case "user"     => db.run(directories.filter(dir => (dir.parentId === parentId.get) && dir.userIds.like(s"%$id%")).result)
+        case "college"  => db.run(directories.filter(dir => (dir.parentId === parentId.get) && dir.collegeIds.like(s"%$id%")).result)
+      }
+
+      Await.ready(fileResult, Duration.Inf)
+      Await.ready(dirResult,  Duration.Inf)
+
+      fileResult.value.get match {
+        case Success(rows) => rows.foreach(obj => objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt))
+        case Failure(t)    => None
+      }
+
+      dirResult.value.get match {
+        case Success(rows) => rows.foreach(obj => objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt))
+        case Failure(t)    => None
+      }
+
+      if (objects.nonEmpty) Some(objects) else None
+    } else {
+      None
+    }
+  }
+
   def findAllByDir(path: String): Option[Seq[ObjectProperty]] = {
     var objects = ArrayBuffer.empty[ObjectProperty]
     val parentId = findDirId(path)
