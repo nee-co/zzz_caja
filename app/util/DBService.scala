@@ -70,9 +70,9 @@ class DBService @Inject()(private val db: ObjectDao) {
         val obj = db.getDirectory(path)
 
         if (obj.nonEmpty && jsonValues.target_type == "college") {
-          db.update(DirectoriesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.insertedBy, obj.get.insertedAt, nowTimestamp))
+          db.update(DirectoriesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
         } else if (obj.nonEmpty && jsonValues.target_type == "user") {
-          db.update(DirectoriesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.insertedBy, obj.get.insertedAt, nowTimestamp))
+          db.update(DirectoriesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
         } else {
           false
         }
@@ -81,9 +81,9 @@ class DBService @Inject()(private val db: ObjectDao) {
         val obj = db.getFile(path)
 
         if (obj.nonEmpty && jsonValues.target_type == "college") {
-          db.update(FilesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, nowTimestamp))
+          db.update(FilesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
         } else if (obj.nonEmpty && jsonValues.target_type == "user") {
-          db.update(FilesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, nowTimestamp))
+          db.update(FilesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
         } else {
           false
         }
