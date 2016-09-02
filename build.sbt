@@ -33,6 +33,6 @@ libraryDependencies ++= Seq(
 , "org.scalaz"         %% "scalaz-core"           % scalaz_version
 )
 
-unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )  
+unmanagedResourceDirectories in Test <+= baseDirectory(_ /"target/web/public/test")
 
-resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"  
+resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
