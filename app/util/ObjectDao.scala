@@ -64,27 +64,6 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     }
   }
 
-  def findAll: Option[Seq[ObjectProperty]] = {
-    var objects = ArrayBuffer.empty[ObjectProperty]
-    val fileResult: Future[Seq[FilesRow]] = db.run(files.sortBy(_.id.asc).result)
-    val dirResult: Future[Seq[DirectoriesRow]] = db.run(directories.sortBy(_.id.asc).result)
-
-    Await.ready(fileResult, Duration.Inf)
-    Await.ready(dirResult, Duration.Inf)
-
-    fileResult.value.get match {
-      case Success(rows) => rows.foreach(obj => objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt))
-      case Failure(t) => None
-    }
-
-    dirResult.value.get match {
-      case Success(rows) => rows.foreach(obj => objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt))
-      case Failure(t) => None
-    }
-
-    if (objects.isEmpty) None else Some(objects)
-  }
-
   def findByLoginId(target: String, path: String, id: String): Option[Seq[ObjectProperty]] = {
     var objects  = ArrayBuffer.empty[ObjectProperty]
     val parentId = findDirId(path)
@@ -117,36 +96,6 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     } else {
       None
     }
-  }
-
-  def findAllByDir(path: String): Option[Seq[ObjectProperty]] = {
-    var objects = ArrayBuffer.empty[ObjectProperty]
-    val parentId = findDirId(path)
-
-    val filesResult: Future[Seq[FilesRow]] = parentId match {
-      case Some(id) => db.run(files.filter(_.parentId === id).result)
-      case None => db.run(files.filter(_.parentId.isEmpty).result)
-    }
-
-    val dirResult: Future[Seq[DirectoriesRow]] = parentId match {
-      case Some(id) => db.run (directories.filter(_.parentId === id).result)
-      case None => db.run(directories.filter(_.parentId.isEmpty).result)
-    }
-
-    Await.ready(filesResult, Duration.Inf)
-    Await.ready(dirResult, Duration.Inf)
-
-    filesResult.value.get match {
-      case Success(rows) => rows.foreach(obj => objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt))
-      case Failure(t) => None
-    }
-
-    dirResult.value.get match {
-      case Success(rows) => rows.foreach(obj => objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt))
-      case Failure(t) => None
-    }
-
-    if (objects.nonEmpty) Some(objects) else None
   }
 
   def findDirId(name: String): Option[Int] = {
