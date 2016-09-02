@@ -3,7 +3,7 @@ package util
 import models.Tables.{Directories, DirectoriesRow, Files, FilesRow}
 import javax.inject.Inject
 
-import models.ObjectProperty
+import models.{LoginUser, ObjectProperty}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._
@@ -64,31 +64,34 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     }
   }
 
-  def findByLoginProperty(target: String, path: String, id: String): Option[Seq[ObjectProperty]] = {
-    var objects  = ArrayBuffer.empty[ObjectProperty]
-    val parentId = findDirId(path)
+  def findByLoginProperty(path: String, user: LoginUser): Option[Seq[ObjectProperty]] = {
+    var objects   = ArrayBuffer.empty[ObjectProperty]
+    val parentDir = getDirectory(path)
 
-    if (parentId.nonEmpty) {
-      val fileResult: Future[Seq[FilesRow]] = target match {
-        case "user"     => db.run(files.filter(file => (file.parentId === parentId.get) && file.userIds.like(s"%$id%")).result)
-        case "college"  => db.run(files.filter(file => (file.parentId === parentId.get) && file.collegeIds.like(s"%$id%")).result)
-      }
-
-      val dirResult: Future[Seq[DirectoriesRow]] = target match {
-        case "user"     => db.run(directories.filter(dir => (dir.parentId === parentId.get) && dir.userIds.like(s"%$id%")).result)
-        case "college"  => db.run(directories.filter(dir => (dir.parentId === parentId.get) && dir.collegeIds.like(s"%$id%")).result)
-      }
+    if (parentDir.nonEmpty) {
+      val fileResult: Future[Seq[FilesRow]]      = db.run(files.filter(_.parentId === parentDir.get.id).result)
+      val dirResult: Future[Seq[DirectoriesRow]] = db.run(directories.filter(_.parentId === parentDir.get.id).result)
 
       Await.ready(fileResult, Duration.Inf)
       Await.ready(dirResult,  Duration.Inf)
 
       fileResult.value.get match {
-        case Success(rows) => rows.foreach(obj => objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt))
+        case Success(rows) => rows.foreach(obj =>
+          if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user.user_id.toString) != -1) {
+            objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
+          } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(user.college.code) != -1) {
+            objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
+          })
         case Failure(t)    => None
       }
 
       dirResult.value.get match {
-        case Success(rows) => rows.foreach(obj => objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt))
+        case Success(rows) => rows.foreach(obj =>
+          if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user.user_id.toString) != -1) {
+            objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
+          } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(user.college.code) != -1) {
+            objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
+          })
         case Failure(t)    => None
       }
 
