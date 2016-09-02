@@ -64,7 +64,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     }
   }
 
-  def findByLoginId(target: String, path: String, id: String): Option[Seq[ObjectProperty]] = {
+  def findByLoginProperty(target: String, path: String, id: String): Option[Seq[ObjectProperty]] = {
     var objects  = ArrayBuffer.empty[ObjectProperty]
     val parentId = findDirId(path)
 
