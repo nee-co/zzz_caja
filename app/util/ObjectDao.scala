@@ -64,7 +64,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     }
   }
 
-  def findByLoginProperty(path: String, user: LoginUser): Option[Seq[ObjectProperty]] = {
+  def findByLoginProperty(path: String, user_id: Option[String], college_code: Option[String]): Option[Seq[ObjectProperty]] = {
     var objects   = ArrayBuffer.empty[ObjectProperty]
     val parentDir = getDirectory(path)
 
@@ -77,9 +77,9 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
 
       fileResult.value.get match {
         case Success(rows) => rows.foreach(obj =>
-          if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user.user_id.toString) != -1) {
+          if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user_id) != -1) {
             objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
-          } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(user.college.code) != -1) {
+          } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(college_code) != -1) {
             objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
           })
         case Failure(t)    => None
@@ -87,9 +87,9 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
 
       dirResult.value.get match {
         case Success(rows) => rows.foreach(obj =>
-          if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user.user_id.toString) != -1) {
+          if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user_id) != -1) {
             objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
-          } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(user.college.code) != -1) {
+          } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(college_code) != -1) {
             objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
           })
         case Failure(t)    => None
