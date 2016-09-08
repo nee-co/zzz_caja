@@ -90,5 +90,5 @@ class DBService @Inject()(private val db: ObjectDao) {
     }
   }
 
-  def getByLoginProperty(path: String, user: LoginUser): Option[Seq[ObjectProperty]] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
+  def getByLoginProperty(path: String, user: LoginUser): Seq[ObjectProperty] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
 }

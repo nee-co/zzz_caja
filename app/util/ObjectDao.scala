@@ -64,7 +64,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     }
   }
 
-  def findByLoginProperty(path: String, user_id: String, college_code: String): Option[Seq[ObjectProperty]] = {
+  def findByLoginProperty(path: String, user_id: String, college_code: String): Seq[ObjectProperty] = {
     var objects   = ArrayBuffer.empty[ObjectProperty]
     val parentDir = getDirectory(path)
 
@@ -95,9 +95,9 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
         case Failure(t)    => None
       }
 
-      if (objects.nonEmpty) Some(objects) else None
+      if (objects.nonEmpty) objects else Seq.empty
     } else {
-      None
+      Seq.empty
     }
   }
 
