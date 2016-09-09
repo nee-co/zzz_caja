@@ -3,7 +3,7 @@ package util
 import java.sql.Timestamp
 import javax.inject.Inject
 
-import models.{CajaRequest, LoginUser, ObjectProperty}
+import models.{CajaRequest, ObjectProperty, User}
 import models.Tables.{DirectoriesRow, FilesRow}
 import org.joda.time.LocalDateTime
 
@@ -90,5 +90,5 @@ class DBService @Inject()(private val db: ObjectDao) {
     }
   }
 
-  def getByLoginProperty(path: String, user: LoginUser): Seq[ObjectProperty] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
+  def getByLoginProperty(path: String, user: User): Seq[ObjectProperty] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
 }
