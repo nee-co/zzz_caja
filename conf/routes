@@ -13,5 +13,6 @@ GET     /db                         controllers.DbTest.index
 POST    /dbTest                     controllers.DbTest.dbTest
 
 # FileAPI
-GET    /files/$path<.+[^/]>         controllers.FileController.download(path)
-DELETE /files/$path<.+[^/]>         controllers.FileController.delete(path)
+GET     /files/$path<.+[^/]>        controllers.FileController.download(path)
+PATCH   /files/*path                controllers.FileController.changeTarget(path)
+DELETE  /files/$path<.+[^/]>        controllers.FileController.delete(path)

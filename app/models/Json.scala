@@ -33,9 +33,14 @@ object Users {
 }
 
 /*
- * Caja Request
+ * Cuenta Login User
  */
-case class FileRequest(name: String, target_type: String, public_ids: List[String])
-object FileRequest {
-  implicit def jsonReads = Json.reads[FileRequest]
+case class LoginUser(user_id: Int, number: String, name: String, user_image: String, college: College)
+object LoginUser {
+  implicit def jsonReads = Json.reads[LoginUser]
+}
+
+case class CajaRequest(name: String, target_type: String, public_ids: List[String])
+object CajaRequest {
+  implicit def jsonReads = Json.reads[CajaRequest]
 }
