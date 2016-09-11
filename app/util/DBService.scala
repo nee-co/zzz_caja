@@ -3,7 +3,7 @@ package util
 import java.sql.Timestamp
 import javax.inject.Inject
 
-import models.{CajaRequest, ObjectProperty, User}
+import models.{CajaRequest, ObjectProperty, TargetProperty, User}
 import models.Tables.{DirectoriesRow, FilesRow}
 import org.joda.time.LocalDateTime
 
@@ -91,4 +91,17 @@ class DBService @Inject()(private val db: ObjectDao) {
   }
 
   def getByLoginProperty(path: String, user: User): Seq[ObjectProperty] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
+
+  def getDirProperty(path: String): Option[TargetProperty] = {
+    val dir  = db.getDirectory(path)
+
+    if (dir.isEmpty) return None
+
+    val name = if (path.count(_ == '/') != 0) {
+      val buf = path.dropRight(1)
+      if (buf.count(_ == '/') == 0) buf else buf.substring(buf.lastIndexOf("/") + 1)
+    } else path
+
+    Some(dir.flatMap(_.userIds).fold(TargetProperty("college", dir.get.collegeIds, name))(ids => TargetProperty("user", Some(ids), name)))
+  }
 }

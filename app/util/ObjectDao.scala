@@ -65,7 +65,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
   }
 
   def findByLoginProperty(path: String, user_id: String, college_code: String): Seq[ObjectProperty] = {
-    var objects   = ArrayBuffer.empty[ObjectProperty]
+    var objects   = new ArrayBuffer[ObjectProperty]
     val parentDir = getDirectory(path)
 
     if (parentDir.nonEmpty) {
@@ -86,12 +86,17 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
       }
 
       dirResult.value.get match {
-        case Success(rows) => rows.foreach(obj =>
+        case Success(rows) => rows.foreach { obj =>
+          val name = if (obj.name.count(_ == '/') != 0) {
+            val buf = obj.name.dropRight(1)
+            if (buf.count(_ == '/') == 0) buf else buf.substring(buf.lastIndexOf("/") + 1)
+          } else obj.name
+
           if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user_id) != -1) {
-            objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
+            objects += ObjectProperty("dir", name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
           } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(college_code) != -1) {
-            objects += ObjectProperty("dir", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
-          })
+            objects += ObjectProperty("dir", name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
+          }}
         case Failure(t)    => None
       }
 
