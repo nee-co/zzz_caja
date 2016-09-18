@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import models.{ObjectProperty, User}
+import models.{CajaRequest, ObjectProperty, User}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import util.{DBService, JsonFormatter, WsService}
@@ -21,4 +21,12 @@ class DirectoryController @Inject()(db: DBService, ws: WsService, json: JsonForm
     Ok(json.toJsonResponse(currentDir, objectList, userMap).getOrElse(Json.toJson("error")))
   }
 
+  def add(path: String) = Action { implicit request =>
+    val targets = Json.parse(request.body.asJson.get.toString).validate[CajaRequest].get
+    //val loginUser: Option[User] = ws.user(request.headers.get("x-consumer-custom-id").fold(0)(id => id.toInt))
+    db.addDirectory(path, targets, 1) match {
+      case true =>  Status(201)
+      case false => Status(500)
+    }
+  }
 }
