@@ -42,4 +42,9 @@ class S3Service {
       case Failure(e) => false
     }
   }
+
+  def createDir(path: String): Boolean = {
+    s3.putObject(bucketName, path, "")
+    s3.doesObjectExist(bucketName, path)
+  }
 }

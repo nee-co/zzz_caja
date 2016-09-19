@@ -104,4 +104,11 @@ class DBService @Inject()(private val db: ObjectDao) {
 
     Some(dir.flatMap(_.userIds).fold(TargetProperty("college", dir.get.collegeIds, name))(ids => TargetProperty("user", Some(ids), name)))
   }
+
+  def addDirectory(path: String, targets: CajaRequest, userId: Int): Boolean = {
+    db.findParentId(path).fold(false)(id => targets.target_type match {
+      case "user"    => db.add(DirectoriesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path, userId, nowTimestamp, nowTimestamp))
+      case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path, userId, nowTimestamp, nowTimestamp))
+    })
+  }
 }

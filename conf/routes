@@ -14,6 +14,7 @@ POST    /dbTest                     controllers.DbTest.dbTest
 
 # FileAPI
 GET     /files/$path<.+[^/]>        controllers.FileController.download(path)
-GET     /files/$path<.+/>           controllers.DirectoryController.ObjectList(path)
+GET     /files/$path<.+/>           controllers.DirectoryController.objectList(path)
+POST    /files/$path<.+/>           controllers.DirectoryController.add(path)
 PATCH   /files/*path                controllers.FileController.changeTarget(path)
 DELETE  /files/$path<.+[^/]>        controllers.FileController.delete(path)
