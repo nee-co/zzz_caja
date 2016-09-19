@@ -10,6 +10,7 @@ import com.typesafe.config.ConfigFactory
 import scala.language.reflectiveCalls
 import scala.util.{Failure, Success}
 import scala.util.Try
+import scala.collection.JavaConversions._
 
 class S3Service {
   private val config     = ConfigFactory.parseFile(new File("./conf/application.conf"))
@@ -46,5 +47,12 @@ class S3Service {
   def createDir(path: String): Boolean = {
     s3.putObject(bucketName, path, "")
     s3.doesObjectExist(bucketName, path)
+  }
+
+  def getUnderKeys(path: String): Seq[String] = {
+    Try(s3.listObjectsV2(bucketName, path).getObjectSummaries.toList) match {
+      case Success(result) => result.map(summary => summary.getKey)
+      case Failure(t) => Seq.empty[String]
+    }
   }
 }

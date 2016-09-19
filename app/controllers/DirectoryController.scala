@@ -30,4 +30,13 @@ class DirectoryController @Inject()(db: DBService, ws: WsService, json: JsonForm
       case (   _,    _) => Status(500)
     }
   }
+
+  def delete(path: String) = Action {
+    val keys = s3.getUnderKeys(path)
+
+    !keys.map(key => db.deleteByPath(key) && s3.delete(key)).contains(false) match {
+      case true  => Status(204)
+      case false => Status(403)
+    }
+  }
 }
