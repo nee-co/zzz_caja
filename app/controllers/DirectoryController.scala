@@ -5,11 +5,11 @@ import javax.inject.Inject
 import models.{CajaRequest, ObjectProperty, User}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
-import util.{DBService, JsonFormatter, WsService}
+import util.{DBService, JsonFormatter, S3Service, WsService}
 
 import scala.collection.mutable
 
-class DirectoryController @Inject()(db: DBService, ws: WsService, json: JsonFormatter) extends Controller {
+class DirectoryController @Inject()(db: DBService, ws: WsService, json: JsonFormatter, s3: S3Service) extends Controller {
   def objectList(path: String) = Action { //implicit request =>
     //val loginUser: Option[User] = ws.user(request.headers.get("x-consumer-custom-id").fold(0)(id => id.toInt))
     val loginUser: Option[User] = ws.user(1)
@@ -24,9 +24,10 @@ class DirectoryController @Inject()(db: DBService, ws: WsService, json: JsonForm
   def add(path: String) = Action { implicit request =>
     val targets = Json.parse(request.body.asJson.get.toString).validate[CajaRequest].get
     //val loginUser: Option[User] = ws.user(request.headers.get("x-consumer-custom-id").fold(0)(id => id.toInt))
-    db.addDirectory(path, targets, 1) match {
-      case true =>  Status(201)
-      case false => Status(500)
+
+    (db.addDirectory(path, targets, 1), s3.createDir(path)) match {
+      case (true, true) => Status(201)
+      case (   _,    _) => Status(500)
     }
   }
 }
