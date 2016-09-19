@@ -111,4 +111,18 @@ class DBService @Inject()(private val db: ObjectDao) {
       case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path, userId, nowTimestamp, nowTimestamp))
     })
   }
+
+  def deleteByPath(path: String): Boolean = {
+    if (path.last == '/') {
+      db.getDirectory(path) match {
+        case Some(result) => db.delete(result)
+        case None => false
+      }
+    } else {
+      db.getFile(path) match {
+        case Some(result) => db.delete(result)
+        case None => false
+      }
+    }
+  }
 }
