@@ -11,17 +11,23 @@ import util.{DBService, S3Service, Using}
 class FileController @Inject()(db: DBService, s3: S3Service) extends Controller {
   def download(path: String) = Action {
     val name: String = if (0 < path.count(_ == '/')) {
-      path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf('.'))
+      path.substring(path.lastIndexOf("/") + 1)
     } else {
-      path.substring(0, path.lastIndexOf('.'))
+      path
     }
-    val extension: String = path.substring(path.lastIndexOf('.'))
+
+    val extension: String = if (path.matches(""".+[.].+""")) {
+      path.substring(path.lastIndexOf('.'))
+    } else {
+      new String("")
+    }
+
     val file: File = File.createTempFile("temp", extension)
 
     s3.download(path) match {
       case Some(result) =>
         for (out <- Using(new FileOutputStream(file))) out.write(result)
-        Ok.sendFile(file, fileName = {f => s"$name$extension"}, onClose = {() => file.delete})
+        Ok.sendFile(file, fileName = {f => name}, onClose = {() => file.delete})
       case None => Status(500)
     }
   }
