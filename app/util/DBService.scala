@@ -13,12 +13,26 @@ class DBService @Inject()(private val db: ObjectDao) {
   private def toDirKeyList(path: String): Seq[String] = {
     val dirList = path.split("/")
 
-    val result = dirList.zipWithIndex.map { case (dirName, num) =>
+    dirList.zipWithIndex.map { case (dirName, num) =>
       val buff = new StringBuilder
       for (i <- 0 to num) { buff.append(dirList.apply(i) + "/") }
       buff.toString()
     }
-    result
+  }
+
+  def getByLoginProperty(path: String, user: User): Seq[ObjectProperty] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
+
+  def getDirProperty(path: String): Option[TargetProperty] = {
+    val dir = db.getDirectory(path)
+
+    if (dir.isEmpty) return None
+
+    val name = if (path.count(_ == '/') != 0) {
+      val buf = path.dropRight(1)
+      if (buf.count(_ == '/') == 0) buf else buf.substring(buf.lastIndexOf("/") + 1)
+    } else path
+
+    Some(dir.flatMap(_.userIds).fold(TargetProperty("college", dir.get.collegeIds, name))(ids => TargetProperty("user", Some(ids), name)))
   }
 
   def addFile(path: String, targets: CajaRequest, userId: Int): Boolean = {
@@ -36,60 +50,40 @@ class DBService @Inject()(private val db: ObjectDao) {
     }.contains(false)
   }
 
-  def deleteByFilepath(path: String): Boolean = {
-    db.getFile(path) match {
-      case Some(file) => if (db.delete(file)) true else false
-      case None => false
-    }
-  }
-
-  def updateTargetByJson(path: String, jsonValues: CajaRequest): Boolean = {
-    db.objType(path) match {
-
-      case "dir"  =>
-        val obj = db.getDirectory(path)
-
-        if (obj.nonEmpty && jsonValues.target_type == "college") {
-          db.update(DirectoriesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
-        } else if (obj.nonEmpty && jsonValues.target_type == "user") {
-          db.update(DirectoriesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
-        } else {
-          false
-        }
-
-      case "file" =>
-        val obj = db.getFile(path)
-
-        if (obj.nonEmpty && jsonValues.target_type == "college") {
-          db.update(FilesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
-        } else if (obj.nonEmpty && jsonValues.target_type == "user") {
-          db.update(FilesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
-        } else {
-          false
-        }
-    }
-  }
-
-  def getByLoginProperty(path: String, user: User): Seq[ObjectProperty] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
-
-  def getDirProperty(path: String): Option[TargetProperty] = {
-    val dir  = db.getDirectory(path)
-
-    if (dir.isEmpty) return None
-
-    val name = if (path.count(_ == '/') != 0) {
-      val buf = path.dropRight(1)
-      if (buf.count(_ == '/') == 0) buf else buf.substring(buf.lastIndexOf("/") + 1)
-    } else path
-
-    Some(dir.flatMap(_.userIds).fold(TargetProperty("college", dir.get.collegeIds, name))(ids => TargetProperty("user", Some(ids), name)))
-  }
-
   def addDirectory(path: String, targets: CajaRequest, userId: Int): Boolean = {
     db.findParentId(path).fold(false)(id => targets.target_type match {
       case "user"    => db.add(DirectoriesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path, userId, nowTimestamp, nowTimestamp))
       case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path, userId, nowTimestamp, nowTimestamp))
     })
+  }
+
+  def updateTargetByJson(path: String, jsonValues: CajaRequest): Boolean = {
+    db.objType(path) match {
+      case "dir"  =>
+        val obj = db.getDirectory(path)
+
+        (obj.nonEmpty, jsonValues.target_type) match {
+          case (true, "user"   ) => db.update(DirectoriesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
+          case (true, "college") => db.update(DirectoriesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
+          case (_   , _        ) => false
+        }
+
+      case "file" =>
+        val obj = db.getFile(path)
+
+        (obj.nonEmpty, jsonValues.target_type) match {
+          case (true, "user"   ) => db.update(FilesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
+          case (true, "college") => db.update(FilesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
+          case (_   , _        ) => false
+        }
+    }
+  }
+
+  def deleteByFilepath(path: String): Boolean = {
+    db.getFile(path) match {
+      case Some(file) => if (db.delete(file)) true else false
+      case None => false
+    }
   }
 
   def deleteByPath(path: String): Boolean = {
