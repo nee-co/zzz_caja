@@ -79,13 +79,6 @@ class DBService @Inject()(private val db: ObjectDao) {
     }
   }
 
-  def deleteByFilepath(path: String): Boolean = {
-    db.getFile(path) match {
-      case Some(file) => if (db.delete(file)) true else false
-      case None => false
-    }
-  }
-
   def deleteByPath(path: String): Boolean = {
     if (path.last == '/') {
       db.getDirectory(path) match {
