@@ -68,42 +68,40 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     var objects   = new ArrayBuffer[ObjectProperty]
     val parentDir = getDirectory(path)
 
-    if (parentDir.nonEmpty) {
-      val fileResult: Future[Seq[FilesRow]]      = db.run(files.filter(_.parentId === parentDir.get.id).result)
-      val dirResult: Future[Seq[DirectoriesRow]] = db.run(directories.filter(_.parentId === parentDir.get.id).result)
+    parentDir.fold(Seq.empty[ObjectProperty])(parent => {
+      val fileResult: Future[Seq[FilesRow]]      = db.run(files.filter(_.parentId === parent.id).result)
+      val dirResult: Future[Seq[DirectoriesRow]] = db.run(directories.filter(_.parentId === parent.id).result)
 
       Await.ready(fileResult, Duration.Inf)
       Await.ready(dirResult,  Duration.Inf)
 
       fileResult.value.get match {
-        case Success(rows) => rows.foreach(obj =>
-          if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user_id) != -1) {
-            objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
-          } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(college_code) != -1) {
-            objects += ObjectProperty("file", obj.name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
+        case Success(rows) => rows.foreach(row =>
+          if (row.userIds.fold(false)(ids => ids.split(",").indexOf(user_id) != -1) ||
+              row.collegeIds.fold(false)(ids => ids.split(",").indexOf(college_code) != -1)) {
+            objects += ObjectProperty("file", row.name, row.insertedBy, row.insertedAt, row.updatedAt)
           })
-        case Failure(t)    => None
+
+        case Failure(t) => None
       }
 
       dirResult.value.get match {
-        case Success(rows) => rows.foreach { obj =>
-          val name = if (obj.name.count(_ == '/') != 0) {
-            val buf = obj.name.dropRight(1)
-            if (buf.count(_ == '/') == 0) buf else buf.substring(buf.lastIndexOf("/") + 1)
-          } else obj.name
+        case Success(rows) => rows.foreach(row => {
+          val name = if (row.name.dropRight(1).count(_ == '/') != 0) {
+            val buf = row.name.dropRight(1)
+            buf.substring(buf.lastIndexOf("/") + 1)
+          } else row.name.dropRight(1)
 
-          if (obj.userIds.nonEmpty && obj.userIds.get.split(",").indexOf(user_id) != -1) {
-            objects += ObjectProperty("dir", name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
-          } else if (obj.collegeIds.nonEmpty && obj.collegeIds.get.split(",").indexOf(college_code) != -1) {
-            objects += ObjectProperty("dir", name, obj.insertedBy, obj.insertedAt, obj.updatedAt)
-          }}
-        case Failure(t)    => None
+          if (row.userIds.fold(false)(ids => ids.split(",").indexOf(user_id) != -1) ||
+              row.collegeIds.fold(false)(ids => ids.split(",").indexOf(college_code) != -1)) {
+            objects += ObjectProperty("dir", name, row.insertedBy, row.insertedAt, row.updatedAt)
+          }})
+
+        case Failure(t) => None
       }
 
-      if (objects.nonEmpty) objects else Seq.empty
-    } else {
-      Seq.empty
-    }
+      if (objects.nonEmpty) objects else Seq.empty[ObjectProperty]
+    })
   }
 
   def findDirId(name: String): Option[Int] = {
