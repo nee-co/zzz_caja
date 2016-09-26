@@ -104,22 +104,6 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     })
   }
 
-  def findDirId(name: String): Option[Int] = {
-    if (name == "/") return None
-
-    val dirId: Future[Option[Int]] = db.run(directories.filter(_.name === name).map(_.id).result.headOption)
-
-    Await.ready(dirId, Duration.Inf)
-
-    dirId.value.get match {
-      case Success(result) => result match {
-        case Some(id) => Some(id)
-        case None => Some(0)
-      }
-      case Failure(t) => None
-    }
-  }
-
   def findParentId(name: String): Option[Int] = {
     if ((name.count(_ == '/') == 1 && name.last == '/') || name.count(_ == '/') == 0) return None
 
@@ -133,20 +117,6 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     id.value.get match {
       case Success(result) => result
       case Failure(t) => None
-    }
-  }
-
-  def hasObj(path: String): Boolean = {
-    val obj = objType(path) match {
-      case "dir"  => db.run(directories.filter (_.name === path).result.headOption)
-      case "file" => db.run(files.filter(_.path === path).result.headOption)
-    }
-
-    Await.ready(obj, Duration.Inf)
-
-    obj.value.get match {
-      case Success(result) => if (result.nonEmpty) true else false
-      case Failure(t) => false
     }
   }
 
