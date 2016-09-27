@@ -20,6 +20,14 @@ class DBService @Inject()(private val db: ObjectDao) {
     }
   }
 
+  private def updateDirs(dirPaths: Seq[String]): Boolean = {
+    !dirPaths.map { dirPath =>
+      db.getDirectory(dirPath).map { dir =>
+        db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeIds, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
+      }
+    }.contains(false)
+  }
+
   def getByLoginProperty(path: String, user: User): Seq[ObjectProperty] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
 
   def getDirProperty(path: String): Option[TargetProperty] = {
@@ -43,11 +51,7 @@ class DBService @Inject()(private val db: ObjectDao) {
       case "college" => db.add(FilesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path.substring(path.lastIndexOf('/') + 1), path, userId, nowTimestamp, nowTimestamp))
     })
 
-    !dirPaths.map { dirPath =>
-      db.getDirectory(dirPath).map { dir =>
-        db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeIds, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
-      }
-    }.contains(false)
+    updateDirs(dirPaths)
   }
 
   def addDirectory(path: String, targets: CajaRequest, userId: Int): Boolean = {
@@ -58,11 +62,7 @@ class DBService @Inject()(private val db: ObjectDao) {
       case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path, userId, nowTimestamp, nowTimestamp))
     })
 
-    !dirPaths.map { dirPath =>
-      db.getDirectory(dirPath).map { dir =>
-        db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeIds, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
-      }
-    }.contains(false)
+    updateDirs(dirPaths)
   }
 
   def updateTargetByJson(path: String, jsonValues: CajaRequest): Boolean = {
@@ -97,28 +97,13 @@ class DBService @Inject()(private val db: ObjectDao) {
 
     if (path.last == '/') {
       db.getDirectory(path) match {
-        case Some(result) =>
-          db.delete(result)
-          !dirPaths.map { dirPath =>
-            db.getDirectory(dirPath).map { dir =>
-              db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeIds, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
-            }
-          }.contains(false)
-
+        case Some(result) => db.delete(result) && updateDirs(dirPaths)
         case None => false
       }
     } else {
       db.getFile(path) match {
-        case Some(result) =>
-          db.delete(result)
-
-          !dirPaths.map { dirPath =>
-            db.getDirectory(dirPath).map { dir =>
-              db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeIds, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
-            }
-          }.contains(false)
-
-         case None => false
+        case Some(result) => db.delete(result) && updateDirs(dirPaths)
+        case None => false
       }
     }
   }
