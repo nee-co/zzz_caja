@@ -4,7 +4,7 @@ import java.io.File
 import com.typesafe.config.ConfigFactory
 
 object Codegen extends App {
-  val config = ConfigFactory.parseFile(new File("./conf/application.conf"))
+  val config = ConfigFactory.parseFile(new File("./conf/application.conf")).resolve
   val slickDriver = config.getString("slick.dbs.default.driver").init
   val jdbcDriver = config.getString("slick.dbs.default.db.driver")
   val url = config.getString("slick.dbs.default.db.url")
