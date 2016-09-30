@@ -13,7 +13,7 @@ import scala.util.Try
 import scala.collection.JavaConversions._
 
 class S3Service {
-  private val config     = ConfigFactory.parseFile(new File("./conf/application.conf"))
+  private val config     = ConfigFactory.parseFile(new File("./conf/application.conf")).resolve
   private val accessKey  = config.getString("aws.s3.accesskey")
   private val secretKey  = config.getString("aws.s3.secretkey")
   private val bucketName = config.getString("aws.s3.bucketname")
