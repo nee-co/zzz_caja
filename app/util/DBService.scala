@@ -20,6 +20,14 @@ class DBService @Inject()(private val db: ObjectDao) {
     }
   }
 
+  private def updateDirs(dirPaths: Seq[String]): Boolean = {
+    !dirPaths.map { dirPath =>
+      db.getDirectory(dirPath).map { dir =>
+        db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeIds, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
+      }
+    }.contains(false)
+  }
+
   def getByLoginProperty(path: String, user: User): Seq[ObjectProperty] = db.findByLoginProperty(path, user.user_id.toString, user.college.code)
 
   def getDirProperty(path: String): Option[TargetProperty] = {
@@ -43,18 +51,18 @@ class DBService @Inject()(private val db: ObjectDao) {
       case "college" => db.add(FilesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path.substring(path.lastIndexOf('/') + 1), path, userId, nowTimestamp, nowTimestamp))
     })
 
-    !dirPaths.map { dirPath =>
-      db.getDirectory(dirPath).map { dir =>
-        db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeIds, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
-      }
-    }.contains(false)
+    updateDirs(dirPaths)
   }
 
   def addDirectory(path: String, targets: CajaRequest, userId: Int): Boolean = {
+    val dirPaths = toDirKeyList(path)
+
     db.findParentId(path).fold(false)(id => targets.target_type match {
       case "user"    => db.add(DirectoriesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path, userId, nowTimestamp, nowTimestamp))
       case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path, userId, nowTimestamp, nowTimestamp))
     })
+
+    updateDirs(dirPaths)
   }
 
   def updateTargetByJson(path: String, jsonValues: CajaRequest): Boolean = {
@@ -80,14 +88,21 @@ class DBService @Inject()(private val db: ObjectDao) {
   }
 
   def deleteByPath(path: String): Boolean = {
+    val dirPaths = if (path.last == '/') {
+      val buf = path.dropRight(1)
+      toDirKeyList(buf.substring(0, buf.lastIndexOf("/") + 1))
+    } else if (0 < path.count(_ == '/')) {
+      toDirKeyList(path.substring(0, path.lastIndexOf("/") + 1))
+    } else Seq.empty[String]
+
     if (path.last == '/') {
       db.getDirectory(path) match {
-        case Some(result) => db.delete(result)
+        case Some(result) => db.delete(result) && updateDirs(dirPaths)
         case None => false
       }
     } else {
       db.getFile(path) match {
-        case Some(result) => db.delete(result)
+        case Some(result) => db.delete(result) && updateDirs(dirPaths)
         case None => false
       }
     }
