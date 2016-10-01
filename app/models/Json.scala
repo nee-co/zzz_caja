@@ -2,14 +2,13 @@ package models
 
 import play.api.libs.json.Json
 
-case class College(code: String, name: String)
+case class College(name: String, code: String)
 object College {
   implicit def jsonReads  = Json.reads[College]
   implicit def jsonWrites = Json.writes[College]
 }
 
-case class User(user_id: Int, number: String, name: String, college: College)
-//case class User(user_id: Int, number: String, name: String, user_image: String, college: College)
+case class User(user_id: Int, number: String, name: String, image_path: String, college: College)
 object User {
   implicit def jsonReads  = Json.reads[User]
   implicit def jsonWrites = Json.writes[User]

@@ -23,7 +23,7 @@ class DBService @Inject()(private val db: ObjectDao) {
   private def updateDirs(dirPaths: Seq[String]): Boolean = {
     !dirPaths.map { dirPath =>
       db.getDirectory(dirPath).map { dir =>
-        db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeIds, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
+        db.update(DirectoriesRow(dir.id, dir.parentId, dir.userIds, dir.collegeCodes, dir.name, dir.insertedBy, dir.insertedAt, nowTimestamp))
       }
     }.contains(false)
   }
@@ -40,7 +40,7 @@ class DBService @Inject()(private val db: ObjectDao) {
       if (buf.count(_ == '/') == 0) buf else buf.substring(buf.lastIndexOf("/") + 1)
     } else path
 
-    Some(dir.flatMap(_.userIds).fold(TargetProperty("college", dir.get.collegeIds, name))(ids => TargetProperty("user", Some(ids), name)))
+    Some(dir.flatMap(_.userIds).fold(TargetProperty("college", dir.get.collegeCodes, name))(ids => TargetProperty("user", Some(ids), name)))
   }
 
   def addFile(path: String, targets: CajaRequest, userId: Int): Boolean = {
@@ -71,7 +71,7 @@ class DBService @Inject()(private val db: ObjectDao) {
         val obj = db.getDirectory(path)
 
         (obj.nonEmpty, jsonValues.target_type) match {
-          case (true, "user"   ) => db.update(DirectoriesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
+          case (true, "user"   ) => db.update(DirectoriesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeCodes, obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
           case (true, "college") => db.update(DirectoriesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
           case (_   , _        ) => false
         }
@@ -80,7 +80,7 @@ class DBService @Inject()(private val db: ObjectDao) {
         val obj = db.getFile(path)
 
         (obj.nonEmpty, jsonValues.target_type) match {
-          case (true, "user"   ) => db.update(FilesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeIds, obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
+          case (true, "user"   ) => db.update(FilesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeCodes, obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
           case (true, "college") => db.update(FilesRow(obj.get.id, obj.get.parentId, obj.get.userIds, Some(jsonValues.public_ids.mkString(",")), obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
           case (_   , _        ) => false
         }

@@ -78,7 +78,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
       fileResult.value.get match {
         case Success(rows) => rows.foreach(row =>
           if (row.userIds.fold(false)(ids => ids.split(",").indexOf(user_id) != -1) ||
-              row.collegeIds.fold(false)(ids => ids.split(",").indexOf(college_code) != -1)) {
+              row.collegeCodes.fold(false)(codes => codes.split(",").indexOf(college_code) != -1)) {
             objects += ObjectProperty("file", row.name, row.insertedBy, row.insertedAt, row.updatedAt)
           })
 
@@ -93,7 +93,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
           } else row.name.dropRight(1)
 
           if (row.userIds.fold(false)(ids => ids.split(",").indexOf(user_id) != -1) ||
-              row.collegeIds.fold(false)(ids => ids.split(",").indexOf(college_code) != -1)) {
+              row.collegeCodes.fold(false)(codes => codes.split(",").indexOf(college_code) != -1)) {
             objects += ObjectProperty("dir", name, row.insertedBy, row.insertedAt, row.updatedAt)
           }})
 
