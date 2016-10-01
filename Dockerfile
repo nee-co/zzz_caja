@@ -10,7 +10,7 @@ RUN apk --no-cache --update add bash mariadb-dev tzdata && \
 ENV PATH $PATH:/sbt/bin
 WORKDIR /app
 COPY . /app
-RUN sbt compile
-CMD ["sbt", "run"]
+RUN sbt clean compile stage
+CMD ["target/universal/stage/bin/caja", "-Dhttp.port=${CAJA_PORT}"]
 ARG REVISION
 LABEL revision=$REVISION maintainer="Nee-co"
