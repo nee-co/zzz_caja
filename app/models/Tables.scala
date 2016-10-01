@@ -22,12 +22,12 @@ trait Tables {
    *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
    *  @param parentId Database column parent_id SqlType(INT), Default(None)
    *  @param userIds Database column user_ids SqlType(VARCHAR), Length(255,true), Default(None)
-   *  @param collegeIds Database column college_ids SqlType(VARCHAR), Length(255,true), Default(None)
+   *  @param collegeCodes Database column college_codes SqlType(VARCHAR), Length(255,true), Default(None)
    *  @param name Database column name SqlType(VARCHAR), Length(50,true)
    *  @param insertedBy Database column inserted_by SqlType(INT)
    *  @param insertedAt Database column inserted_at SqlType(DATETIME)
    *  @param updatedAt Database column updated_at SqlType(DATETIME) */
-  case class DirectoriesRow(id: Int, parentId: Option[Int] = None, userIds: Option[String] = None, collegeIds: Option[String] = None, name: String, insertedBy: Int, insertedAt: java.sql.Timestamp, updatedAt: java.sql.Timestamp)
+  case class DirectoriesRow(id: Int, parentId: Option[Int] = None, userIds: Option[String] = None, collegeCodes: Option[String] = None, name: String, insertedBy: Int, insertedAt: java.sql.Timestamp, updatedAt: java.sql.Timestamp)
   /** GetResult implicit for fetching DirectoriesRow objects using plain SQL queries */
   implicit def GetResultDirectoriesRow(implicit e0: GR[Int], e1: GR[Option[Int]], e2: GR[Option[String]], e3: GR[String], e4: GR[java.sql.Timestamp]): GR[DirectoriesRow] = GR{
     prs => import prs._
@@ -35,9 +35,9 @@ trait Tables {
   }
   /** Table description of table directories. Objects of this class serve as prototypes for rows in queries. */
   class Directories(_tableTag: Tag) extends Table[DirectoriesRow](_tableTag, "directories") {
-    def * = (id, parentId, userIds, collegeIds, name, insertedBy, insertedAt, updatedAt) <> (DirectoriesRow.tupled, DirectoriesRow.unapply)
+    def * = (id, parentId, userIds, collegeCodes, name, insertedBy, insertedAt, updatedAt) <> (DirectoriesRow.tupled, DirectoriesRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), parentId, userIds, collegeIds, Rep.Some(name), Rep.Some(insertedBy), Rep.Some(insertedAt), Rep.Some(updatedAt)).shaped.<>({r=>import r._; _1.map(_=> DirectoriesRow.tupled((_1.get, _2, _3, _4, _5.get, _6.get, _7.get, _8.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), parentId, userIds, collegeCodes, Rep.Some(name), Rep.Some(insertedBy), Rep.Some(insertedAt), Rep.Some(updatedAt)).shaped.<>({r=>import r._; _1.map(_=> DirectoriesRow.tupled((_1.get, _2, _3, _4, _5.get, _6.get, _7.get, _8.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -45,8 +45,8 @@ trait Tables {
     val parentId: Rep[Option[Int]] = column[Option[Int]]("parent_id", O.Default(None))
     /** Database column user_ids SqlType(VARCHAR), Length(255,true), Default(None) */
     val userIds: Rep[Option[String]] = column[Option[String]]("user_ids", O.Length(255,varying=true), O.Default(None))
-    /** Database column college_ids SqlType(VARCHAR), Length(255,true), Default(None) */
-    val collegeIds: Rep[Option[String]] = column[Option[String]]("college_ids", O.Length(255,varying=true), O.Default(None))
+    /** Database column college_codes SqlType(VARCHAR), Length(255,true), Default(None) */
+    val collegeCodes: Rep[Option[String]] = column[Option[String]]("college_codes", O.Length(255,varying=true), O.Default(None))
     /** Database column name SqlType(VARCHAR), Length(50,true) */
     val name: Rep[String] = column[String]("name", O.Length(50,varying=true))
     /** Database column inserted_by SqlType(INT) */
@@ -63,13 +63,13 @@ trait Tables {
    *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
    *  @param parentId Database column parent_id SqlType(INT), Default(None)
    *  @param userIds Database column user_ids SqlType(VARCHAR), Length(255,true), Default(None)
-   *  @param collegeIds Database column college_ids SqlType(VARCHAR), Length(255,true), Default(None)
+   *  @param collegeCodes Database column college_codes SqlType(VARCHAR), Length(255,true), Default(None)
    *  @param name Database column name SqlType(VARCHAR), Length(50,true)
    *  @param path Database column path SqlType(VARCHAR), Length(255,true)
    *  @param insertedBy Database column inserted_by SqlType(INT)
    *  @param insertedAt Database column inserted_at SqlType(DATETIME)
    *  @param updatedAt Database column updated_at SqlType(DATETIME) */
-  case class FilesRow(id: Int, parentId: Option[Int] = None, userIds: Option[String] = None, collegeIds: Option[String] = None, name: String, path: String, insertedBy: Int, insertedAt: java.sql.Timestamp, updatedAt: java.sql.Timestamp)
+  case class FilesRow(id: Int, parentId: Option[Int] = None, userIds: Option[String] = None, collegeCodes: Option[String] = None, name: String, path: String, insertedBy: Int, insertedAt: java.sql.Timestamp, updatedAt: java.sql.Timestamp)
   /** GetResult implicit for fetching FilesRow objects using plain SQL queries */
   implicit def GetResultFilesRow(implicit e0: GR[Int], e1: GR[Option[Int]], e2: GR[Option[String]], e3: GR[String], e4: GR[java.sql.Timestamp]): GR[FilesRow] = GR{
     prs => import prs._
@@ -77,9 +77,9 @@ trait Tables {
   }
   /** Table description of table files. Objects of this class serve as prototypes for rows in queries. */
   class Files(_tableTag: Tag) extends Table[FilesRow](_tableTag, "files") {
-    def * = (id, parentId, userIds, collegeIds, name, path, insertedBy, insertedAt, updatedAt) <> (FilesRow.tupled, FilesRow.unapply)
+    def * = (id, parentId, userIds, collegeCodes, name, path, insertedBy, insertedAt, updatedAt) <> (FilesRow.tupled, FilesRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), parentId, userIds, collegeIds, Rep.Some(name), Rep.Some(path), Rep.Some(insertedBy), Rep.Some(insertedAt), Rep.Some(updatedAt)).shaped.<>({r=>import r._; _1.map(_=> FilesRow.tupled((_1.get, _2, _3, _4, _5.get, _6.get, _7.get, _8.get, _9.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), parentId, userIds, collegeCodes, Rep.Some(name), Rep.Some(path), Rep.Some(insertedBy), Rep.Some(insertedAt), Rep.Some(updatedAt)).shaped.<>({r=>import r._; _1.map(_=> FilesRow.tupled((_1.get, _2, _3, _4, _5.get, _6.get, _7.get, _8.get, _9.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -87,8 +87,8 @@ trait Tables {
     val parentId: Rep[Option[Int]] = column[Option[Int]]("parent_id", O.Default(None))
     /** Database column user_ids SqlType(VARCHAR), Length(255,true), Default(None) */
     val userIds: Rep[Option[String]] = column[Option[String]]("user_ids", O.Length(255,varying=true), O.Default(None))
-    /** Database column college_ids SqlType(VARCHAR), Length(255,true), Default(None) */
-    val collegeIds: Rep[Option[String]] = column[Option[String]]("college_ids", O.Length(255,varying=true), O.Default(None))
+    /** Database column college_codes SqlType(VARCHAR), Length(255,true), Default(None) */
+    val collegeCodes: Rep[Option[String]] = column[Option[String]]("college_codes", O.Length(255,varying=true), O.Default(None))
     /** Database column name SqlType(VARCHAR), Length(50,true) */
     val name: Rep[String] = column[String]("name", O.Length(50,varying=true))
     /** Database column path SqlType(VARCHAR), Length(255,true) */
