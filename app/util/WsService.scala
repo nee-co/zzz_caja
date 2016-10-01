@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class WsService @Inject()(ws: WSClient) {
   def user(id: Int): Option[User] = {
-    val user: Future[User] = ws.url(s"http://127.0.0.1:4000/internal/users/$id").get.map(response => Json.parse(response.json.toString).validate[User].get)
+    val user: Future[User] = ws.url(s"${sys.env("CUENTA_URL")}/internal/users/$id").get.map(response => Json.parse(response.json.toString).validate[User].get)
 
     Await.ready(user, Duration.Inf)
 
@@ -25,7 +25,7 @@ class WsService @Inject()(ws: WSClient) {
 
   def users(ids: Seq[String]): Seq[User] = {
     val user_ids = ids.mkString("+")
-    val users: Future[UserList] = ws.url(s"http://127.0.0.1:4000/internal/users/list?user_ids=$user_ids").get.map(response => Json.parse(response.json.toString).validate[UserList].get)
+    val users: Future[UserList] = ws.url(s"${sys.env("CUENTA_URL")}/internal/users/list?user_ids=$user_ids").get.map(response => Json.parse(response.json.toString).validate[UserList].get)
 
     Await.ready(users, Duration.Inf)
 
