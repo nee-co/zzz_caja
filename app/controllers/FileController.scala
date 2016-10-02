@@ -32,9 +32,8 @@ class FileController @Inject()(db: DBService, s3: S3Service) extends Controller 
     }
   }
 
-  def delete(path: String) = Action {
-    val userId = 1
-    //val userId = request.headers.get("x-consumer-custom-id").fold(0)(id => id.toInt)
+  def delete(path: String) = Action { implicit request =>
+    val userId = request.headers.get("x-consumer-custom-id").map(str => str.toInt)
 
     if (db.canDelete(path, userId)) {
       (s3.delete(path), db.deleteByPath(path)) match {
@@ -48,8 +47,7 @@ class FileController @Inject()(db: DBService, s3: S3Service) extends Controller 
 
   def changeTarget(path: String) = Action { implicit request =>
     val jsonValues: CajaRequest = Json.parse(request.body.asJson.get.toString).validate[CajaRequest].get
-    val userId = 1
-    //val userId = request.headers.get("x-consumer-custom-id").fold(0)(id => id.toInt)
+    val userId = request.headers.get("x-consumer-custom-id").map(str => str.toInt)
 
     db.updateTargetByJson(path, jsonValues, userId) match {
       case true  => Status(204)
