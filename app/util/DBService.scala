@@ -43,33 +43,37 @@ class DBService @Inject()(private val db: ObjectDao) {
     Some(dir.flatMap(_.userIds).fold(TargetProperty("college", dir.get.collegeCodes, name))(ids => TargetProperty("user", Some(ids), name)))
   }
 
-  def addFile(path: String, targets: CajaRequest, userId: Int): Boolean = {
+  def addFile(path: String, targets: CajaRequest, userId: Option[Int]): Boolean = {
     val dirPaths = toDirKeyList(path.substring(0, path.lastIndexOf("/")))
 
+    if (userId.isEmpty) return false
+
     db.findParentId(path).fold(return false)(id => targets.target_type match {
-      case "user"    => db.add(FilesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path.substring(path.lastIndexOf('/') + 1), path, userId, nowTimestamp, nowTimestamp))
-      case "college" => db.add(FilesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path.substring(path.lastIndexOf('/') + 1), path, userId, nowTimestamp, nowTimestamp))
+      case "user"    => db.add(FilesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path.substring(path.lastIndexOf('/') + 1), path, userId.get, nowTimestamp, nowTimestamp))
+      case "college" => db.add(FilesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path.substring(path.lastIndexOf('/') + 1), path, userId.get, nowTimestamp, nowTimestamp))
     })
 
     updateDirs(dirPaths)
   }
 
-  def addDirectory(path: String, targets: CajaRequest, userId: Int): Boolean = {
+  def addDirectory(path: String, targets: CajaRequest, userId: Option[Int]): Boolean = {
     val dirPaths = toDirKeyList(path)
 
+    if (userId.isEmpty) return false
+
     db.findParentId(path).fold(false)(id => targets.target_type match {
-      case "user"    => db.add(DirectoriesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path, userId, nowTimestamp, nowTimestamp))
-      case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path, userId, nowTimestamp, nowTimestamp))
+      case "user"    => db.add(DirectoriesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path, userId.get, nowTimestamp, nowTimestamp))
+      case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path, userId.get, nowTimestamp, nowTimestamp))
     })
 
     updateDirs(dirPaths)
   }
 
-  def updateTargetByJson(path: String, jsonValues: CajaRequest, userId: Int): Boolean = {
+  def updateTargetByJson(path: String, jsonValues: CajaRequest, userId: Option[Int]): Boolean = {
     db.objType(path) match {
       case "dir"  =>
         val obj = db.getDirectory(path)
-        obj.fold(return false)(obj => if (obj.insertedBy != userId) return false)
+        obj.fold(return false)(obj => if (obj.insertedBy != userId.fold(return false)(identity)) return false)
 
         jsonValues.target_type match {
           case "user"    => db.update(DirectoriesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeCodes, obj.get.name, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
@@ -78,7 +82,7 @@ class DBService @Inject()(private val db: ObjectDao) {
 
       case "file" =>
         val obj = db.getFile(path)
-        obj.fold(return false)(obj => if (obj.insertedBy != userId) return false)
+        obj.fold(return false)(obj => if (obj.insertedBy != userId.fold(return false)(identity)) return false)
 
         jsonValues.target_type match {
           case "user"    => db.update(FilesRow(obj.get.id, obj.get.parentId, Some(jsonValues.public_ids.mkString(",")), obj.get.collegeCodes, obj.get.name, obj.get.path, obj.get.insertedBy, obj.get.insertedAt, obj.get.updatedAt))
@@ -108,13 +112,13 @@ class DBService @Inject()(private val db: ObjectDao) {
     }
   }
 
-  def canDelete(path: String, userId: Int): Boolean = {
+  def canDelete(path: String, userId: Option[Int]): Boolean = {
     if (path.last == '/') {
       val obj = db.getDirectory(path)
-      obj.fold(false)(obj => obj.insertedBy == userId)
+      obj.fold(false)(obj => obj.insertedBy == userId.fold(return false)(identity))
     } else {
       val obj = db.getFile(path)
-      obj.fold(false)(obj => obj.insertedBy == userId)
+      obj.fold(false)(obj => obj.insertedBy == userId.fold(return false)(identity))
     }
   }
 }
