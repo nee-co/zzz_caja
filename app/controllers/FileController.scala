@@ -33,16 +33,25 @@ class FileController @Inject()(db: DBService, s3: S3Service) extends Controller 
   }
 
   def delete(path: String) = Action {
-    s3.delete(path) match {
-      case true  => if (db.deleteByPath(path)) Status(204) else Status(403)
-      case false => Status(500)
+    val userId = 1
+    //val userId = request.headers.get("x-consumer-custom-id").fold(0)(id => id.toInt)
+
+    if (db.canDelete(path, userId)) {
+      (s3.delete(path), db.deleteByPath(path)) match {
+        case (true, true) => Status(204)
+        case (   _,    _) => Status(500)
+      }
+    } else {
+      Status(403)
     }
   }
 
   def changeTarget(path: String) = Action { implicit request =>
     val jsonValues: CajaRequest = Json.parse(request.body.asJson.get.toString).validate[CajaRequest].get
+    val userId = 1
+    //val userId = request.headers.get("x-consumer-custom-id").fold(0)(id => id.toInt)
 
-    db.updateTargetByJson(path, jsonValues) match {
+    db.updateTargetByJson(path, jsonValues, userId) match {
       case true  => Status(204)
       case false => Status(500)
     }
