@@ -22,10 +22,10 @@ class JsonFormatter {
       dir.target_type match {
         case "user" =>
           val targets = dir.public_ids.map(str => str.split(",")).map(ids => ids.map(id => userList(id.toInt)).toList)
-          Json.toJson(ResponseHasUser(PropertyHasUser(dir.name, dir.target_type, targets.fold(List.empty[User])(users => users)), objects))
+          Json.toJson(ResponseHasUser(PropertyHasUser(dir.name, dir.target_type, targets.fold(List.empty[User])(identity)), objects))
         case "college" =>
           val targets = dir.public_ids.map(str => str.split(",")).map(codes => codes.map(code => colleges(code)).toList)
-          Json.toJson(ResponseHasCollege(PropertyHasCollege(dir.name, dir.target_type, targets.fold(List.empty[College])(colleges => colleges)), objects))
+          Json.toJson(ResponseHasCollege(PropertyHasCollege(dir.name, dir.target_type, targets.fold(List.empty[College])(identity)), objects))
       }
     }
     result.iterator.toStream.headOption
