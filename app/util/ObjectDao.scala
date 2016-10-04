@@ -44,7 +44,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     Await.ready(result, Duration.Inf)
 
     result.value.get match {
-      case Success(updateResult) => if (updateResult == 1) true else false
+      case Success(updateResult) => updateResult == 1
       case Failure(t) => false
     }
   }
@@ -59,7 +59,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     Await.ready(result, Duration.Inf)
 
     result.value.get match {
-      case Success(deleteResult) => if (deleteResult == 1) true else false
+      case Success(deleteResult) => deleteResult == 1
       case Failure(t) => false
     }
   }
