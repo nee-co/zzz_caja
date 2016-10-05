@@ -45,7 +45,7 @@ class FileController @Inject()(db: DBService, s3: S3Service) extends Controller 
     }
   }
 
-  def changeTarget(path: String) = Action { implicit request =>
+  def update(path: String) = Action { implicit request =>
     val jsonValues: CajaRequest = Json.parse(request.body.asJson.get.toString).validate[CajaRequest].get
     val userId = request.headers.get("x-consumer-custom-id").map(str => str.toInt)
 
