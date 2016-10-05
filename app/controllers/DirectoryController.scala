@@ -17,16 +17,24 @@ class DirectoryController @Inject()(db: DBService, ws: WsService, json: JsonForm
     val currentDir = db.getDirProperty(path)
 
     ws.users(objectList.map(_.created_user.toString) ++ currentDir.flatMap(_.public_ids).fold(Seq.empty[String])(str => str.split(",").toSeq)).foreach(user => userMap.put(user.user_id, user))
-    Ok(json.toJsonResponse(currentDir, objectList, userMap).getOrElse(Json.toJson("Not found user ID")))
+    Ok(json.toJsonResponse(currentDir, objectList, userMap).getOrElse(Json.toJson("error")))
   }
 
-  def add(path: String) = Action { implicit request =>
-    val targets = Json.parse(request.body.asJson.get.toString).validate[CajaRequest].get
+  def updateOrCreate(path: String) = Action { implicit request =>
+    val jsonValues = Json.parse(request.body.asJson.get.toString).validate[CajaRequest].get
     val userId = request.headers.get("x-consumer-custom-id").map(str => str.toInt)
+    val dirPath = s"$path${jsonValues.name}/"
 
-    (db.addDirectory(path, targets, userId), s3.createDir(path)) match {
-      case (true, true) => Status(201)
-      case (   _,    _) => Status(500)
+    if (s3.hasObject(dirPath)) {
+      db.updateTargetByJson(dirPath, jsonValues, userId) match {
+        case true  => Status(204)
+        case false => Status(500)
+      }
+    } else {
+      (db.addDirectory(dirPath, jsonValues, userId), s3.createDir(dirPath)) match {
+        case (true, true) => Status(201)
+        case (   _,    _) => Status(500)
+      }
     }
   }
 

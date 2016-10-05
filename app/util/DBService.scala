@@ -56,14 +56,14 @@ class DBService @Inject()(private val db: ObjectDao) {
     updateDirs(dirPaths)
   }
 
-  def addDirectory(path: String, targets: CajaRequest, userId: Option[Int]): Boolean = {
+  def addDirectory(path: String, jsonValues: CajaRequest, userId: Option[Int]): Boolean = {
     val dirPaths = toDirKeyList(path)
 
     if (userId.isEmpty) return false
 
-    db.findParentId(path).fold(false)(id => targets.target_type match {
-      case "user"    => db.add(DirectoriesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path, userId.get, nowTimestamp, nowTimestamp))
-      case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path, userId.get, nowTimestamp, nowTimestamp))
+    db.findParentId(path).fold(false)(id => jsonValues.target_type match {
+      case "user"    => db.add(DirectoriesRow(0, Some(id), Some(jsonValues.public_ids.mkString(",")), None, path, userId.get, nowTimestamp, nowTimestamp))
+      case "college" => db.add(DirectoriesRow(0, Some(id), None, Some(jsonValues.public_ids.mkString(",")), path, userId.get, nowTimestamp, nowTimestamp))
     })
 
     updateDirs(dirPaths)

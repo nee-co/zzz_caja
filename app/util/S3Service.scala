@@ -39,7 +39,7 @@ class S3Service {
 
   def delete(fileKey: String): Boolean = {
     Try(s3.deleteObject(bucketName, fileKey)) match {
-      case Success(i) => !s3.doesObjectExist(bucketName, fileKey)
+      case Success(i) => !hasObject(fileKey)
       case Failure(e) => false
     }
   }
@@ -55,4 +55,6 @@ class S3Service {
       case Failure(t) => Seq.empty[String]
     }
   }
+
+  def hasObject(path: String) = s3.doesObjectExist(bucketName, path)
 }
