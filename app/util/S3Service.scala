@@ -19,12 +19,12 @@ class S3Service {
   private val bucketName = config.getString("aws.s3.bucketname")
   private val s3 = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey))
 
-  def upload(path: String, name: String, file: File): Option[String] = {
+  def upload(path: String, name: String, file: File): Boolean = {
     val fileKey = path + name
 
     Try(s3.putObject(bucketName, fileKey, file)) match {
-      case Success(i) => if (s3.doesObjectExist(bucketName, fileKey)) Some(fileKey) else None
-      case Failure(e) => None
+      case Success(i) => hasObject(fileKey)
+      case Failure(e) => false
     }
   }
 

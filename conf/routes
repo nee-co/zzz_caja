@@ -4,7 +4,6 @@
 
 # Home page
 GET     /                           controllers.Application.index
-
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
@@ -12,6 +11,7 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /files/$path<.+[^/]>        controllers.FileController.download(path)
 GET     /files/$path<.+/>           controllers.DirectoryController.objectList(path)
 PUT     /files/$path<.+/>           controllers.DirectoryController.updateOrCreate(path)
-PATCH   /files/$path<.+[^/]>        controllers.FileController.changeTarget(path)
+POST    /files/$path<.+/>           controllers.FileController.create(path)
+PATCH   /files/$path<.+[^/]>        controllers.FileController.update(path)
 DELETE  /files/$path<.+[^/]>        controllers.FileController.delete(path)
 DELETE  /files/$path<.+/>           controllers.DirectoryController.delete(path)
