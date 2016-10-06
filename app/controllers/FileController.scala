@@ -54,4 +54,16 @@ class FileController @Inject()(db: DBService, s3: S3Service) extends Controller 
       case false => Status(500)
     }
   }
+
+  def create(path: String) = Action(parse.multipartFormData) { implicit request =>
+    val userId = request.headers.get("x-consumer-custom-id").map(str => str.toInt)
+    val target_type = request.body.dataParts("target_type").head
+    val public_ids = request.body.dataParts("public_ids").head
+    val file = request.body.file("file").get
+
+    (db.addFile(target_type, path, file.filename, userId, public_ids), s3.upload(path, file.filename, file.ref.file)) match {
+      case (true, true) => Status(201)
+      case (   _,    _) => Status(500)
+    }
+  }
 }

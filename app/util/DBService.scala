@@ -43,14 +43,15 @@ class DBService @Inject()(private val db: ObjectDao) {
     Some(dir.flatMap(_.userIds).fold(TargetProperty("college", dir.get.collegeCodes, name))(ids => TargetProperty("user", Some(ids), name)))
   }
 
-  def addFile(path: String, targets: CajaRequest, userId: Option[Int]): Boolean = {
-    val dirPaths = toDirKeyList(path.substring(0, path.lastIndexOf("/")))
+  def addFile(target_type: String, path: String, fileName: String, userId: Option[Int], public_ids: String): Boolean = {
+    val dirPaths = toDirKeyList(path)
+    val filePath = s"$path$fileName"
 
     if (userId.isEmpty) return false
 
-    db.findParentId(path).fold(return false)(id => targets.target_type match {
-      case "user"    => db.add(FilesRow(0, Some(id), Some(targets.public_ids.mkString(",")), None, path.substring(path.lastIndexOf('/') + 1), path, userId.get, nowTimestamp, nowTimestamp))
-      case "college" => db.add(FilesRow(0, Some(id), None, Some(targets.public_ids.mkString(",")), path.substring(path.lastIndexOf('/') + 1), path, userId.get, nowTimestamp, nowTimestamp))
+    db.findParentId(path).fold(return false)(id => target_type match {
+      case "user"    => db.add(FilesRow(0, Some(id), Some(public_ids), None, fileName, filePath, userId.get, nowTimestamp, nowTimestamp))
+      case "college" => db.add(FilesRow(0, Some(id), None, Some(public_ids), fileName, filePath, userId.get, nowTimestamp, nowTimestamp))
     })
 
     updateDirs(dirPaths)
