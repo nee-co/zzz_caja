@@ -24,8 +24,8 @@ class WsService @Inject()(ws: WSClient) {
   }
 
   def users(ids: Seq[String]): Seq[User] = {
-    val user_ids = ids.mkString("+")
-    val users: Future[UserList] = ws.url(s"${sys.env("CUENTA_URL")}/internal/users/list?user_ids=$user_ids").get.map(response => Json.parse(response.json.toString).validate[UserList].get)
+    val userIds = ids.mkString("+")
+    val users: Future[UserList] = ws.url(s"${sys.env("CUENTA_URL")}/internal/users/list?user_ids=$userIds").get.map(response => Json.parse(response.json.toString).validate[UserList].get)
 
     Await.ready(users, Duration.Inf)
 

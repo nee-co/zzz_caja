@@ -16,7 +16,8 @@ class DirectoryController @Inject()(db: DBService, ws: WsService, json: JsonForm
     val userMap = new mutable.HashMap[Integer, User]
     val currentDir = db.getDirProperty(path)
 
-    ws.users(objectList.map(_.created_user.toString) ++ currentDir.flatMap(_.public_ids).fold(Seq.empty[String])(str => str.split(",").toSeq)).foreach(user => userMap.put(user.user_id, user))
+    ws.users(objectList.map(_.insertedBy.toString) ++ currentDir.flatMap(_.publicIds).fold(Seq.empty[String])(str => str.split(",").toSeq))
+      .foreach(user => userMap.put(user.user_id, user))
     Ok(json.toJsonResponse(currentDir, objectList, userMap).getOrElse(Json.toJson("error")))
   }
 

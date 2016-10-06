@@ -64,7 +64,7 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     }
   }
 
-  def findByLoginProperty(path: String, user_id: String, college_code: String): Seq[ObjectProperty] = {
+  def findByLoginProperty(path: String, userId: String, collegeCode: String): Seq[ObjectProperty] = {
     var objects   = new ArrayBuffer[ObjectProperty]
     val parentDir = getDirectory(path)
 
@@ -77,8 +77,8 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
 
       fileResult.value.get match {
         case Success(rows) => rows.foreach(row =>
-          if (row.userIds.fold(false)(ids => ids.split(",").indexOf(user_id) != -1) ||
-              row.collegeCodes.fold(false)(codes => codes.split(",").indexOf(college_code) != -1)) {
+          if (row.userIds.fold(false)(ids => ids.split(",").indexOf(userId) != -1) ||
+              row.collegeCodes.fold(false)(codes => codes.split(",").indexOf(collegeCode) != -1)) {
             objects += ObjectProperty("file", row.name, row.insertedBy, row.insertedAt, row.updatedAt)
           })
 
@@ -92,8 +92,8 @@ class ObjectDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
             buf.substring(buf.lastIndexOf("/") + 1)
           } else row.name.dropRight(1)
 
-          if (row.userIds.fold(false)(ids => ids.split(",").indexOf(user_id) != -1) ||
-              row.collegeCodes.fold(false)(codes => codes.split(",").indexOf(college_code) != -1)) {
+          if (row.userIds.fold(false)(ids => ids.split(",").indexOf(userId) != -1) ||
+              row.collegeCodes.fold(false)(codes => codes.split(",").indexOf(collegeCode) != -1)) {
             objects += ObjectProperty("dir", name, row.insertedBy, row.insertedAt, row.updatedAt)
           }})
 
