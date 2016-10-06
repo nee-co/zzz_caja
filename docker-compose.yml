@@ -26,4 +26,4 @@ services:
 volumes:
   caja:
     external:
-      name: neeco_cuenta
+      name: neeco_caja
