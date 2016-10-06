@@ -13,5 +13,7 @@ CREATE TABLE `directories` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO directories VALUE (0, NULL, NULL, "A,B,C,D,E,F,G", "top/", 0, now(), now());
+
 # --- !Downs
 DROP TABLE directories;
