@@ -5,9 +5,11 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
     volumes:
-    - caja:/var/lib/mysql
-
+      - caja:/var/lib/mysql
+    networks:
+      - caja
   caja-application:
+    build: .
     image: caja-application
     environment:
       - CAJA_PORT=9000
@@ -20,10 +22,23 @@ services:
       - CAJA_S3_BUCKETNAME=FIXME
       - CAJA_SECRET_KEY_BASE=1f0bef8714009078799cf781b489f5012c625a12dc4478388634af4b784b72c5bd1e3f2630a361af351cfaf5bf84559f818b2796b9fcbc331cfa404a3805cb6f
       - CUENTA_URL=http://cuenta-application:4000
+    ports:
+      - "9000:9000"
     depends_on:
       - caja-database
+    networks:
+      - caja
+      - caja-cuenta
 
 volumes:
   caja:
     external:
       name: neeco_caja
+
+networks:
+  caja:
+    external:
+      name: neeco_caja
+  caja-cuenta:
+    external:
+      name: neeco_caja-cuenta
