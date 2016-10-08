@@ -3,10 +3,10 @@ REVISION=`git rev-parse HEAD`
 .PHONY: image dev-image up_db up_app volumes networks
 
 image:
-	docker build --no-cache --tag caja-application:$(REVISION) .
+	docker build --no-cache --tag caja-application --build-arg REVISION=$(REVISION) .
 
 dev-image:
-	docker build --tag caja-application:$(REVISION) .
+	docker build --tag caja-application --build-arg REVISION=$(REVISION) .
 
 up_db:
 	docker-compose up -d caja-database
