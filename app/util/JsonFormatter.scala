@@ -7,7 +7,7 @@ import play.api.libs.json.{JsValue, Json}
 import scala.collection.mutable
 
 class JsonFormatter {
-  val colleges: Map[String, College] = Map("a" -> College("a", "クリエイター"), "b" -> College("b","ミュージック"),
+  val colleges: Map[String, College] = Map("a" -> College("a", "クリエイターズ"), "b" -> College("b","ミュージック"),
                                            "c" -> College("c", "IT"), "d" -> College("D", "テクノロジー"),
                                            "e" -> College("e", "医療・保育"), "f" -> College("f","スポーツ"), "g" -> College("g", "デザイン"))
 
