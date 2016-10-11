@@ -7,25 +7,25 @@ import play.api.libs.json.{JsValue, Json}
 import scala.collection.mutable
 
 class JsonFormatter {
-  val colleges: Map[String, College] = Map("A" -> College("A", "クリエイター"), "B" -> College("B","ミュージック"),
-                                           "C" -> College("C", "IT"), "D" -> College("D", "テクノロジー"),
-                                           "E" -> College("E", "医療・保育"), "F" -> College("F","スポーツ"), "G" -> College("G", "デザイン"))
+  val colleges: Map[String, College] = Map("a" -> College("a", "クリエイターズ"), "b" -> College("b","ミュージック"),
+                                           "c" -> College("c", "IT"), "d" -> College("D", "テクノロジー"),
+                                           "e" -> College("e", "医療・保育"), "f" -> College("f","スポーツ"), "g" -> College("g", "デザイン"))
 
-  def toJsonResponse(current_dir: Option[TargetProperty], objectList: Seq[ObjectProperty], userList: mutable.Map[Integer, User]): Option[JsValue] = {
+  def toJsonResponse(currentDir: Option[TargetProperty], objectList: Seq[ObjectProperty], userList: mutable.Map[Integer, User]): Option[JsValue] = {
     val result = for {
-      dir <- current_dir
+      dir <- currentDir
     } yield {
       val objects = objectList.map(obj =>
-        Object(obj.obj_type, obj.name, userList(obj.created_user), new DateTime(obj.created_at).toString("yyyy/MM/dd HH:mm"), new DateTime(obj.updated_at).toString("yyyy/MM/dd HH:mm"))
+        Object(obj.objType, obj.name, userList(obj.insertedBy), new DateTime(obj.insertedAt).toString("yyyy/MM/dd HH:mm"), new DateTime(obj.updatedAt).toString("yyyy/MM/dd HH:mm"))
       ).toList
 
-      dir.target_type match {
+      dir.targetType match {
         case "user" =>
-          val targets = dir.public_ids.map(str => str.split(",")).map(ids => ids.map(id => userList(id.toInt)).toList)
-          Json.toJson(ResponseHasUser(PropertyHasUser(dir.name, dir.target_type, targets.fold(List.empty[User])(identity)), objects))
+          val targets = dir.publicIds.map(str => str.split(",")).map(ids => ids.map(id => userList(id.toInt)).toList)
+          Json.toJson(ResponseHasUser(PropertyHasUser(dir.name, dir.targetType, targets.fold(List.empty[User])(identity)), objects))
         case "college" =>
-          val targets = dir.public_ids.map(str => str.split(",")).map(codes => codes.map(code => colleges(code)).toList)
-          Json.toJson(ResponseHasCollege(PropertyHasCollege(dir.name, dir.target_type, targets.fold(List.empty[College])(identity)), objects))
+          val targets = dir.publicIds.map(str => str.split(",")).map(codes => codes.map(code => colleges(code)).toList)
+          Json.toJson(ResponseHasCollege(PropertyHasCollege(dir.name, dir.targetType, targets.fold(List.empty[College])(identity)), objects))
       }
     }
     result.iterator.toStream.headOption

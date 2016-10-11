@@ -14,9 +14,6 @@ object User {
   implicit def jsonWrites = Json.writes[User]
 }
 
-/*
- * Cuenta List
- */
 case class UserList(users: List[User])
 object UserList {
   implicit def jsonReads  = Json.reads[UserList]
