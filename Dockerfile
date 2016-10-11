@@ -11,6 +11,6 @@ ENV PATH $PATH:/sbt/bin
 WORKDIR /app
 COPY . /app
 RUN sbt clean compile stage
-CMD ["target/universal/stage/bin/caja", "-Dhttp.port=${CAJA_PORT}"]
+CMD ["target/universal/stage/bin/caja"]
 ARG REVISION
 LABEL revision=$REVISION maintainer="Nee-co"
