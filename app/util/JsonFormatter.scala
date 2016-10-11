@@ -7,9 +7,9 @@ import play.api.libs.json.{JsValue, Json}
 import scala.collection.mutable
 
 class JsonFormatter {
-  val colleges: Map[String, College] = Map("A" -> College("A", "クリエイター"), "B" -> College("B","ミュージック"),
-                                           "C" -> College("C", "IT"), "D" -> College("D", "テクノロジー"),
-                                           "E" -> College("E", "医療・保育"), "F" -> College("F","スポーツ"), "G" -> College("G", "デザイン"))
+  val colleges: Map[String, College] = Map("a" -> College("a", "クリエイター"), "b" -> College("b","ミュージック"),
+                                           "c" -> College("c", "IT"), "d" -> College("D", "テクノロジー"),
+                                           "e" -> College("e", "医療・保育"), "f" -> College("f","スポーツ"), "g" -> College("g", "デザイン"))
 
   def toJsonResponse(currentDir: Option[TargetProperty], objectList: Seq[ObjectProperty], userList: mutable.Map[Integer, User]): Option[JsValue] = {
     val result = for {
