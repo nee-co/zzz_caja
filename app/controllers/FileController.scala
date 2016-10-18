@@ -58,7 +58,7 @@ class FileController @Inject()(db: DBService, s3: S3Service) extends Controller 
   def create(path: String) = Action(parse.multipartFormData) { implicit request =>
     val userId = request.headers.get("x-consumer-custom-id").map(str => str.toInt)
     val targetType = request.body.dataParts("target_type").head
-    val publicIds = request.body.dataParts("public_ids").head
+    val publicIds = request.body.dataParts("public_ids").mkString(",")
     val file = request.body.file("file").get
 
     (db.addFile(targetType, path, file.filename, userId, publicIds), s3.upload(path, file.filename, file.ref.file)) match {
