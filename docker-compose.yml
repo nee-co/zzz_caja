@@ -4,6 +4,7 @@ services:
     image: mariadb
     environment:
       - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=caja_production
     volumes:
       - caja:/var/lib/mysql
     networks:
