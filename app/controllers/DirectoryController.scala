@@ -14,7 +14,9 @@ class DirectoryController @Inject()(db: DBService, ws: WsService, json: JsonForm
     val loginUser: Option[User] = ws.user(request.headers.get("x-consumer-custom-id").fold(0)(id => id.toInt))
     val currentDir = db.getDirProperty(path)
 
-    if (currentDir.nonEmpty) {
+    if (loginUser.isEmpty) {
+      Status(401)
+    } else if (currentDir.nonEmpty) {
       val objectList = loginUser.fold(Seq.empty[ObjectProperty])(user => db.getByLoginProperty(path, user))
       val userMap = new mutable.HashMap[Integer, User]
       val userIds = currentDir.get.targetType match {
